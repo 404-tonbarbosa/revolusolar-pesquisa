@@ -55,16 +55,22 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            background-color: #cccccc;
+            color: #333;
+            transition: all 0.3s;
         }
-        .btn-realizado {
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .btn-realizado.active {
             background-color: #2ecc71;
             color: white;
         }
-        .btn-recusado {
+        .btn-recusado.active {
             background-color: #e74c3c;
             color: white;
         }
-        .btn-pendente {
+        .btn-pendente.active {
             background-color: #f39c12;
             color: white;
         }
@@ -72,6 +78,13 @@
             background-color: #3498db;
             color: white;
             margin-top: 10px;
+            width: 100%;
+        }
+        .btn-relatorio {
+            background-color: #9b59b6;
+            color: white;
+            margin-top: 10px;
+            width: 100%;
         }
         .progresso {
             margin-top: 20px;
@@ -91,6 +104,14 @@
             background-color: #2ecc71;
             width: 0%;
             transition: width 0.3s;
+        }
+        .botoes-etapa {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .botoes-etapa button {
+            flex: 1;
         }
     </style>
 </head>
@@ -182,16 +203,19 @@
                     const btnRealizado = document.createElement('button');
                     btnRealizado.className = `btn btn-realizado ${status === 'realizado' ? 'active' : ''}`;
                     btnRealizado.textContent = '✔';
+                    btnRealizado.title = 'Entrevista realizada';
                     btnRealizado.onclick = () => atualizarStatus(id, 'realizado', btnRealizado, btnRecusado, btnPendente);
                     
                     const btnRecusado = document.createElement('button');
                     btnRecusado.className = `btn btn-recusado ${status === 'recusado' ? 'active' : ''}`;
                     btnRecusado.textContent = '✖';
+                    btnRecusado.title = 'Morador não quis participar ou não estava';
                     btnRecusado.onclick = () => atualizarStatus(id, 'recusado', btnRealizado, btnRecusado, btnPendente);
                     
                     const btnPendente = document.createElement('button');
                     btnPendente.className = `btn btn-pendente ${status === 'pendente' ? 'active' : ''}`;
                     btnPendente.textContent = '?';
+                    btnPendente.title = 'Ainda não visitado';
                     btnPendente.onclick = () => atualizarStatus(id, 'pendente', btnRealizado, btnRecusado, btnPendente);
                     
                     divBtns.appendChild(btnRealizado);
@@ -202,12 +226,25 @@
                     divEtapa.appendChild(divAp);
                 });
                 
+                // Botões de ação para a etapa
+                const divBotoesEtapa = document.createElement('div');
+                divBotoesEtapa.className = 'botoes-etapa';
+                
                 // Botão para resetar a etapa
                 const btnReset = document.createElement('button');
                 btnReset.className = 'btn btn-reset';
                 btnReset.textContent = 'Resetar Etapa';
                 btnReset.onclick = () => resetarEtapa(indexEtapa);
-                divEtapa.appendChild(btnReset);
+                
+                // Botão para gerar relatório
+                const btnRelatorio = document.createElement('button');
+                btnRelatorio.className = 'btn btn-relatorio';
+                btnRelatorio.textContent = 'Relatório Diário';
+                btnRelatorio.onclick = () => gerarRelatorio(indexEtapa);
+                
+                divBotoesEtapa.appendChild(btnReset);
+                divBotoesEtapa.appendChild(btnRelatorio);
+                divEtapa.appendChild(divBotoesEtapa);
                 
                 container.appendChild(divEtapa);
             });
@@ -245,6 +282,56 @@
                     
                     // Recarrega a página para atualizar os botões
                     location.reload();
+                }
+            }
+            
+            function gerarRelatorio(indexEtapa) {
+                const etapa = etapas[indexEtapa];
+                let realizados = 0;
+                let recusados = 0;
+                let pendentes = 0;
+                
+                // Conta os status dos apartamentos desta etapa
+                etapa.apartamentos.forEach((ap, indexAp) => {
+                    const id = `${indexEtapa}-${indexAp}`;
+                    const status = dadosSalvos[id] || 'pendente';
+                    
+                    if (status === 'realizado') realizados++;
+                    else if (status === 'recusado') recusados++;
+                    else pendentes++;
+                });
+                
+                // Cria o conteúdo do relatório
+                const dataAtual = new Date().toLocaleDateString();
+                let relatorio = `RELATÓRIO DIÁRIO - ${etapa.nome}\n`;
+                relatorio += `Data: ${dataAtual}\n\n`;
+                relatorio += `Total de apartamentos: ${etapa.apartamentos.length}\n`;
+                relatorio += `Entrevistas realizadas: ${realizados}\n`;
+                relatorio += `Recusas: ${recusados}\n`;
+                relatorio += `Pendentes: ${pendentes}\n\n`;
+                relatorio += `Detalhes:\n`;
+                
+                // Adiciona a lista de apartamentos com status
+                etapa.apartamentos.forEach((ap, indexAp) => {
+                    const id = `${indexEtapa}-${indexAp}`;
+                    const status = dadosSalvos[id] || 'pendente';
+                    let statusTexto;
+                    
+                    if (status === 'realizado') statusTexto = 'REALIZADO';
+                    else if (status === 'recusado') statusTexto = 'RECUSADO';
+                    else statusTexto = 'PENDENTE';
+                    
+                    relatorio += `${ap}: ${statusTexto}\n`;
+                });
+                
+                // Exibe o relatório (pode ser adaptado para enviar por email, etc.)
+                alert(relatorio);
+                
+                // Opção para copiar para a área de transferência
+                if (confirm('Relatório gerado. Deseja copiar para a área de transferência?')) {
+                    navigator.clipboard.writeText(relatorio)
+                        .then(() => alert('Relatório copiado!'))
+                        .catch(err => console.error('Erro ao copiar:', err));
                 }
             }
             
