@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revolusolar - Controle de Entrevistas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .etapa {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            width: 300px;
+        }
+        .etapa h2 {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .apartamento {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .apartamento:last-child {
+            border-bottom: none;
+        }
+        .status-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-realizado {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-recusado {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-pendente {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-reset {
+            background-color: #3498db;
+            color: white;
+            margin-top: 10px;
+        }
+        .progresso {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #2ecc71;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Revolusolar - Controle de Entrevistas</h1>
+    
+    <div class="progresso">
+        Progresso Geral: <span id="progresso-texto">0%</span>
+        <div class="progress-bar">
+            <div class="progress" id="progresso-barra"></div>
+        </div>
+    </div>
+    
+    <div class="container" id="etapas-container">
+        <!-- As etapas serão geradas pelo JavaScript -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dados dos apartamentos por etapa
+            const etapas = [
+                {
+                    nome: "1 ETAPA",
+                    apartamentos: [
+                        "Bloco 10 - AP 301", "Bloco 10 - AP 302", "Bloco 10 - AP 303", "Bloco 10 - AP 304",
+                        "Bloco 11 - AP 001", "Bloco 11 - AP 002", "Bloco 11 - AP 003", "Bloco 11 - AP 004",
+                        "Bloco 11 - AP 101", "Bloco 11 - AP 102", "Bloco 11 - AP 103", "Bloco 11 - AP 104",
+                        "Bloco 11 - AP 201", "Bloco 11 - AP 202", "Bloco 11 - AP 203", "Bloco 11 - AP 204",
+                        "Bloco 11 - AP 301", "Bloco 11 - AP 302", "Bloco 11 - AP 303", "Bloco 11 - AP 304",
+                        "Bloco 12 - AP 001", "Bloco 12 - AP 002", "Bloco 12 - AP 003", "Bloco 12 - AP 004",
+                        "Bloco 12 - AP 101", "Bloco 12 - AP 102"
+                    ]
+                },
+                {
+                    nome: "2 ETAPA",
+                    apartamentos: [
+                        "Bloco 10 - AP 301", "Bloco 10 - AP 302", "Bloco 10 - AP 303", "Bloco 10 - AP 304",
+                        "Bloco 11 - AP 001", "Bloco 11 - AP 002", "Bloco 11 - AP 003", "Bloco 11 - AP 004",
+                        "Bloco 11 - AP 101", "Bloco 11 - AP 102", "Bloco 11 - AP 103", "Bloco 11 - AP 104",
+                        "Bloco 11 - AP 201", "Bloco 11 - AP 202", "Bloco 11 - AP 203", "Bloco 11 - AP 204",
+                        "Bloco 11 - AP 301", "Bloco 11 - AP 302", "Bloco 11 - AP 303", "Bloco 11 - AP 304",
+                        "Bloco 12 - AP 001", "Bloco 12 - AP 002", "Bloco 12 - AP 003", "Bloco 12 - AP 004",
+                        "Bloco 12 - AP 101", "Bloco 12 - AP 102"
+                    ]
+                },
+                {
+                    nome: "3 ETAPA",
+                    apartamentos: [
+                        "Bloco 10 - AP 301", "Bloco 10 - AP 302", "Bloco 10 - AP 303", "Bloco 10 - AP 304",
+                        "Bloco 11 - AP 001", "Bloco 11 - AP 002", "Bloco 11 - AP 003", "Bloco 11 - AP 004",
+                        "Bloco 11 - AP 101", "Bloco 11 - AP 102", "Bloco 11 - AP 103", "Bloco 11 - AP 104",
+                        "Bloco 11 - AP 201", "Bloco 11 - AP 202", "Bloco 11 - AP 203", "Bloco 11 - AP 204",
+                        "Bloco 11 - AP 301", "Bloco 11 - AP 302", "Bloco 11 - AP 303", "Bloco 11 - AP 304",
+                        "Bloco 12 - AP 001", "Bloco 12 - AP 002", "Bloco 12 - AP 003", "Bloco 12 - AP 004",
+                        "Bloco 12 - AP 101", "Bloco 12 - AP 102"
+                    ]
+                }
+            ];
+
+            const container = document.getElementById('etapas-container');
+            
+            // Carrega os dados salvos ou inicializa
+            let dadosSalvos = JSON.parse(localStorage.getItem('revolusolarEntrevistas')) || {};
+            
+            // Cria as etapas e apartamentos
+            etapas.forEach((etapa, indexEtapa) => {
+                const divEtapa = document.createElement('div');
+                divEtapa.className = 'etapa';
+                
+                const h2 = document.createElement('h2');
+                h2.textContent = etapa.nome;
+                divEtapa.appendChild(h2);
+                
+                etapa.apartamentos.forEach((ap, indexAp) => {
+                    const divAp = document.createElement('div');
+                    divAp.className = 'apartamento';
+                    
+                    const spanAp = document.createElement('span');
+                    spanAp.textContent = ap;
+                    divAp.appendChild(spanAp);
+                    
+                    const divBtns = document.createElement('div');
+                    divBtns.className = 'status-buttons';
+                    
+                    // Verifica o status salvo ou define como pendente
+                    const id = `${indexEtapa}-${indexAp}`;
+                    const status = dadosSalvos[id] || 'pendente';
+                    
+                    const btnRealizado = document.createElement('button');
+                    btnRealizado.className = `btn btn-realizado ${status === 'realizado' ? 'active' : ''}`;
+                    btnRealizado.textContent = '✔';
+                    btnRealizado.onclick = () => atualizarStatus(id, 'realizado', btnRealizado, btnRecusado, btnPendente);
+                    
+                    const btnRecusado = document.createElement('button');
+                    btnRecusado.className = `btn btn-recusado ${status === 'recusado' ? 'active' : ''}`;
+                    btnRecusado.textContent = '✖';
+                    btnRecusado.onclick = () => atualizarStatus(id, 'recusado', btnRealizado, btnRecusado, btnPendente);
+                    
+                    const btnPendente = document.createElement('button');
+                    btnPendente.className = `btn btn-pendente ${status === 'pendente' ? 'active' : ''}`;
+                    btnPendente.textContent = '?';
+                    btnPendente.onclick = () => atualizarStatus(id, 'pendente', btnRealizado, btnRecusado, btnPendente);
+                    
+                    divBtns.appendChild(btnRealizado);
+                    divBtns.appendChild(btnRecusado);
+                    divBtns.appendChild(btnPendente);
+                    divAp.appendChild(divBtns);
+                    
+                    divEtapa.appendChild(divAp);
+                });
+                
+                // Botão para resetar a etapa
+                const btnReset = document.createElement('button');
+                btnReset.className = 'btn btn-reset';
+                btnReset.textContent = 'Resetar Etapa';
+                btnReset.onclick = () => resetarEtapa(indexEtapa);
+                divEtapa.appendChild(btnReset);
+                
+                container.appendChild(divEtapa);
+            });
+            
+            // Atualiza o progresso inicial
+            atualizarProgresso();
+            
+            function atualizarStatus(id, status, btnRealizado, btnRecusado, btnPendente) {
+                // Atualiza os botões visualmente
+                btnRealizado.classList.remove('active');
+                btnRecusado.classList.remove('active');
+                btnPendente.classList.remove('active');
+                
+                if (status === 'realizado') btnRealizado.classList.add('active');
+                if (status === 'recusado') btnRecusado.classList.add('active');
+                if (status === 'pendente') btnPendente.classList.add('active');
+                
+                // Salva no localStorage
+                dadosSalvos[id] = status;
+                localStorage.setItem('revolusolarEntrevistas', JSON.stringify(dadosSalvos));
+                
+                // Atualiza o progresso
+                atualizarProgresso();
+            }
+            
+            function resetarEtapa(indexEtapa) {
+                if (confirm(`Tem certeza que deseja resetar todos os apartamentos da ${etapas[indexEtapa].nome}?`)) {
+                    // Remove todos os apartamentos desta etapa
+                    etapas[indexEtapa].apartamentos.forEach((ap, indexAp) => {
+                        const id = `${indexEtapa}-${indexAp}`;
+                        delete dadosSalvos[id];
+                    });
+                    
+                    localStorage.setItem('revolusolarEntrevistas', JSON.stringify(dadosSalvos));
+                    
+                    // Recarrega a página para atualizar os botões
+                    location.reload();
+                }
+            }
+            
+            function atualizarProgresso() {
+                const totalApartamentos = etapas.reduce((total, etapa) => total + etapa.apartamentos.length, 0);
+                let realizados = 0;
+                
+                // Conta quantos apartamentos foram realizados
+                for (const id in dadosSalvos) {
+                    if (dadosSalvos[id] === 'realizado') {
+                        realizados++;
+                    }
+                }
+                
+                const porcentagem = Math.round((realizados / totalApartamentos) * 100);
+                document.getElementById('progresso-texto').textContent = `${porcentagem}%`;
+                document.getElementById('progresso-barra').style.width = `${porcentagem}%`;
+            }
+        });
+    </script>
+</body>
+</html>
