@@ -3,19 +3,22 @@
   "short_name": "Revolusolar",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#3498db",
-  "theme_color": "#3498db",
+  "background_color": "#FFA500",
+  "theme_color": "#FF8C00",
   "description": "Aplicativo para controle de pesquisas de campo do projeto Revolusolar",
   "icons": [
     {
       "src": "icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "orientation": "portrait"
 }
