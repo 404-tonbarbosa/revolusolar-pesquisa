@@ -113,10 +113,60 @@
         .botoes-etapa button {
             flex: 1;
         }
+        .horario-pesquisa {
+            background-color: #eaf2f8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .horario-pesquisa div {
+            margin: 5px 0;
+        }
+        .whatsapp-link {
+            display: inline-block;
+            background-color: #25D366;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>Revolusolar - Controle de Entrevistas</h1>
+    
+    <div class="horario-pesquisa">
+        <div>Início da Pesquisa: <span id="inicio-pesquisa">--:--</span></div>
+        <div>Fim da Pesquisa: <span id="fim-pesquisa">--:--</span></div>
+    </div>
     
     <div class="progresso">
         Progresso Geral: <span id="progresso-texto">0%</span>
@@ -129,8 +179,21 @@
         <!-- As etapas serão geradas pelo JavaScript -->
     </div>
 
+    <div id="modal-relatorio" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Relatório de Pesquisa</h2>
+            <div id="conteudo-relatorio"></div>
+            <a id="whatsapp-link" class="whatsapp-link" target="_blank">Enviar por WhatsApp</a>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Registra horário de início
+            const inicioPesquisa = new Date();
+            document.getElementById('inicio-pesquisa').textContent = inicioPesquisa.toLocaleTimeString();
+            
             // Dados dos apartamentos por etapa
             const etapas = [
                 {
@@ -172,6 +235,8 @@
             ];
 
             const container = document.getElementById('etapas-container');
+            const modal = document.getElementById('modal-relatorio');
+            const span = document.getElementsByClassName('close')[0];
             
             // Carrega os dados salvos ou inicializa
             let dadosSalvos = JSON.parse(localStorage.getItem('revolusolarEntrevistas')) || {};
@@ -252,6 +317,17 @@
             // Atualiza o progresso inicial
             atualizarProgresso();
             
+            // Configura o modal
+            span.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+            
             function atualizarStatus(id, status, btnRealizado, btnRecusado, btnPendente) {
                 // Atualiza os botões visualmente
                 btnRealizado.classList.remove('active');
@@ -286,6 +362,10 @@
             }
             
             function gerarRelatorio(indexEtapa) {
+                // Registra horário de fim
+                const fimPesquisa = new Date();
+                document.getElementById('fim-pesquisa').textContent = fimPesquisa.toLocaleTimeString();
+                
                 const etapa = etapas[indexEtapa];
                 let realizados = 0;
                 let recusados = 0;
@@ -303,36 +383,47 @@
                 
                 // Cria o conteúdo do relatório
                 const dataAtual = new Date().toLocaleDateString();
-                let relatorio = `RELATÓRIO DIÁRIO - ${etapa.nome}\n`;
-                relatorio += `Data: ${dataAtual}\n\n`;
-                relatorio += `Total de apartamentos: ${etapa.apartamentos.length}\n`;
-                relatorio += `Entrevistas realizadas: ${realizados}\n`;
-                relatorio += `Recusas: ${recusados}\n`;
-                relatorio += `Pendentes: ${pendentes}\n\n`;
-                relatorio += `Detalhes:\n`;
+                const inicio = document.getElementById('inicio-pesquisa').textContent;
+                const fim = document.getElementById('fim-pesquisa').textContent;
+                
+                let relatorio = `*RELATÓRIO REVOLUSOLAR - ${etapa.nome}*\n`;
+                relatorio += `*Data:* ${dataAtual}\n`;
+                relatorio += `*Horário:* ${inicio} às ${fim}\n\n`;
+                relatorio += `*Resumo:*\n`;
+                relatorio += `✅ *Realizados:* ${realizados}\n`;
+                relatorio += `❌ *Recusas:* ${recusados}\n`;
+                relatorio += `🕒 *Pendentes:* ${pendentes}\n`;
+                relatorio += `*Total de apartamentos:* ${etapa.apartamentos.length}\n\n`;
+                relatorio += `*Detalhes dos apartamentos:*\n`;
                 
                 // Adiciona a lista de apartamentos com status
                 etapa.apartamentos.forEach((ap, indexAp) => {
                     const id = `${indexEtapa}-${indexAp}`;
                     const status = dadosSalvos[id] || 'pendente';
-                    let statusTexto;
+                    let emoji;
                     
-                    if (status === 'realizado') statusTexto = 'REALIZADO';
-                    else if (status === 'recusado') statusTexto = 'RECUSADO';
-                    else statusTexto = 'PENDENTE';
+                    if (status === 'realizado') emoji = '✅';
+                    else if (status === 'recusado') emoji = '❌';
+                    else emoji = '🕒';
                     
-                    relatorio += `${ap}: ${statusTexto}\n`;
+                    relatorio += `${emoji} ${ap}\n`;
                 });
                 
-                // Exibe o relatório (pode ser adaptado para enviar por email, etc.)
-                alert(relatorio);
+                // Exibe o relatório no modal
+                document.getElementById('conteudo-relatorio').textContent = relatorio;
                 
-                // Opção para copiar para a área de transferência
-                if (confirm('Relatório gerado. Deseja copiar para a área de transferência?')) {
-                    navigator.clipboard.writeText(relatorio)
-                        .then(() => alert('Relatório copiado!'))
-                        .catch(err => console.error('Erro ao copiar:', err));
-                }
+                // Cria o link para WhatsApp
+                const whatsappLink = document.getElementById('whatsapp-link');
+                const textoEncoded = encodeURIComponent(relatorio);
+                whatsappLink.href = `https://wa.me/?text=${textoEncoded}`;
+                
+                // Abre o modal
+                modal.style.display = 'block';
+                
+                // Copia para área de transferência
+                navigator.clipboard.writeText(relatorio)
+                    .then(() => console.log('Relatório copiado'))
+                    .catch(err => console.error('Erro ao copiar:', err));
             }
             
             function atualizarProgresso() {
